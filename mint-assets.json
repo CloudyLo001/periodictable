@@ -7,7 +7,7 @@
         "manifestVersion": 1,
         "kind": "asset",
         "assetType": "audio",
-        "assetId": "xd788zdsvaq3xt3n4rd6pge1ed8bcf6p"
+        "assetId": "xd7b4d1nr95gbs64jprjsvjj4n8bfv32"
       },
       "transform": {
         "position": [
@@ -33,7 +33,7 @@
           "role": "audio",
           "format": "mp3",
           "contentType": "audio/mpeg",
-          "filename": "atom-ambience-5c06b8.mp3",
+          "filename": "atom-ambience-v2-4c310d.mp3",
           "localPath": "public/assets/mint/atom-ambience/audio_file.mp3",
           "loaderHint": "audio",
           "byteSize": 193141,
@@ -124,7 +124,7 @@
         "manifestVersion": 1,
         "kind": "asset",
         "assetType": "audio",
-        "assetId": "xd75d6rb3w6phy7c0evzw530j18bew2y"
+        "assetId": "xd74n7ghey0p98wcbbz2tsbass8bfsk3"
       },
       "transform": {
         "position": [
@@ -150,7 +150,7 @@
           "role": "audio",
           "format": "mp3",
           "contentType": "audio/mpeg",
-          "filename": "hover-tick-e3eff7.mp3",
+          "filename": "hover-tick-v2-7b40b3.mp3",
           "localPath": "public/assets/mint/hover-tick/audio_file.mp3",
           "loaderHint": "audio",
           "byteSize": 8821,

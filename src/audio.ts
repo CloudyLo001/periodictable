@@ -2,13 +2,40 @@ import { AUDIO_FILES } from './audio-manifest';
 
 type SfxName = keyof typeof AUDIO_FILES;
 
+/** Peak-normalize a clip so quiet source files still play at a usable level. */
+function normalizationFor(buffer: AudioBuffer): number {
+  let peak = 0;
+  for (let c = 0; c < buffer.numberOfChannels; c++) {
+    const data = buffer.getChannelData(c);
+    // stride-sample long clips; peaks in generated audio are not needle-thin
+    const step = data.length > 200000 ? 4 : 1;
+    for (let i = 0; i < data.length; i += step) {
+      const a = Math.abs(data[i]);
+      if (a > peak) peak = a;
+    }
+  }
+  if (peak <= 0.0001) return 1;
+  return Math.min(Math.max(TARGET_PEAK / peak, MIN_NORM), MAX_NORM);
+}
+
 /**
  * WebAudio SFX manager. Fails soft: missing files or a locked AudioContext
  * never block the app — sounds simply stay silent.
  */
+/** Peak every clip is normalized toward, so source loudness doesn't matter. */
+const TARGET_PEAK = 0.85;
+const MIN_NORM = 0.25;
+const MAX_NORM = 24;
+
+interface Clip {
+  buffer: AudioBuffer;
+  /** multiplier that brings this clip to TARGET_PEAK */
+  norm: number;
+}
+
 export class AudioManager {
   private ctx: AudioContext | null = null;
-  private buffers = new Map<SfxName, AudioBuffer>();
+  private buffers = new Map<SfxName, Clip>();
   private master: GainNode | null = null;
   private ambience: { src: AudioBufferSourceNode; gain: GainNode } | null = null;
   private muted = false;
@@ -49,7 +76,7 @@ export class AudioManager {
           if (!res.ok) return;
           const data = await res.arrayBuffer();
           const buffer = await this.ctx!.decodeAudioData(data);
-          this.buffers.set(name, buffer);
+          this.buffers.set(name, { buffer, norm: normalizationFor(buffer) });
         } catch {
           /* sound unavailable; stay silent */
         }
@@ -66,29 +93,29 @@ export class AudioManager {
 
   play(name: SfxName, volume = 0.5, rate = 1): void {
     if (!this.ctx || !this.master || this.muted) return;
-    const buffer = this.buffers.get(name);
-    if (!buffer) return;
+    const clip = this.buffers.get(name);
+    if (!clip) return;
     if (this.ctx.state === 'suspended') void this.ctx.resume();
     const src = this.ctx.createBufferSource();
-    src.buffer = buffer;
+    src.buffer = clip.buffer;
     src.playbackRate.value = rate;
     const gain = this.ctx.createGain();
-    gain.gain.value = volume;
+    gain.gain.value = volume * clip.norm;
     src.connect(gain).connect(this.master);
     src.start();
   }
 
   startAmbience(volume = 0.22): void {
     if (!this.ctx || !this.master || this.ambience) return;
-    const buffer = this.buffers.get('ambience');
-    if (!buffer) return;
+    const clip = this.buffers.get('ambience');
+    if (!clip) return;
     if (this.ctx.state === 'suspended') void this.ctx.resume();
     const src = this.ctx.createBufferSource();
-    src.buffer = buffer;
+    src.buffer = clip.buffer;
     src.loop = true;
     const gain = this.ctx.createGain();
     gain.gain.value = 0;
-    gain.gain.setTargetAtTime(volume, this.ctx.currentTime, 0.8);
+    gain.gain.setTargetAtTime(volume * clip.norm, this.ctx.currentTime, 0.8);
     src.connect(gain).connect(this.master);
     src.start();
     this.ambience = { src, gain };
