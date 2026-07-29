@@ -61,6 +61,29 @@
       #overlay .detail { font-size: 12px; color: rgba(255, 255, 255, 0.5); max-width: 420px; line-height: 1.6; }
       @keyframes spin { to { transform: rotate(360deg); } }
 
+      /* Table title */
+      #app-title {
+        position: fixed;
+        top: 26px;
+        left: 50%;
+        transform: translateX(-50%);
+        z-index: 15;
+        pointer-events: none;
+        color: var(--fg);
+        font-size: 17px;
+        font-weight: 600;
+        letter-spacing: 0.55em;
+        text-indent: 0.55em;
+        text-transform: uppercase;
+        opacity: 0.9;
+        transition: opacity 0.4s ease;
+        white-space: nowrap;
+      }
+      #app-title.hidden { opacity: 0; }
+      @media (max-width: 640px) {
+        #app-title { font-size: 13px; top: 20px; }
+      }
+
       /* Tooltip */
       #tooltip {
         position: fixed;
@@ -242,6 +265,7 @@
       <div class="detail">Preparing elements…</div>
     </div>
 
+    <div id="app-title">Periodic Table</div>
     <div id="tooltip"></div>
     <div id="data-sheet"></div>
 

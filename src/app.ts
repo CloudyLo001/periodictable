@@ -49,6 +49,7 @@ export class App {
   private tooltip = document.getElementById('tooltip')!;
   private exitBtn = document.getElementById('exit-btn')!;
   private dataSheet = document.getElementById('data-sheet')!;
+  private appTitle = document.getElementById('app-title')!;
 
   onFirstFrame: (() => void) | null = null;
   private firstFrameDone = false;
@@ -201,11 +202,9 @@ export class App {
     this.controls.target.copy(TABLE_CAM_TARGET);
     this.controls.minDistance = 7;
     this.controls.maxDistance = Math.max(42, tableRestPos(this.camera.aspect).z + 14);
-    this.controls.minPolarAngle = 0.35;
-    this.controls.maxPolarAngle = Math.PI - 0.35;
-    this.controls.minAzimuthAngle = -1.1;
-    this.controls.maxAzimuthAngle = 1.1;
-    this.controls.enablePan = true;
+    // the table is a fixed frontal view: zoom only
+    this.controls.enableRotate = false;
+    this.controls.enablePan = false;
   }
 
   private applyAtomControlLimits(camDist: number): void {
@@ -214,8 +213,7 @@ export class App {
     this.controls.maxDistance = camDist + 6;
     this.controls.minPolarAngle = 0.25;
     this.controls.maxPolarAngle = Math.PI - 0.25;
-    this.controls.minAzimuthAngle = -Infinity;
-    this.controls.maxAzimuthAngle = Infinity;
+    this.controls.enableRotate = true;
     this.controls.enablePan = false;
   }
 
@@ -224,6 +222,7 @@ export class App {
     this.mode = 'entering';
     this.activeIndex = index;
     this.setHover(-1);
+    this.appTitle.classList.add('hidden');
     this.controls.enabled = false;
     this.savedCamPos.copy(this.camera.position);
     this.savedCamTarget.copy(this.controls.target);
@@ -365,6 +364,7 @@ export class App {
     this.applyTableControlLimits();
     this.controls.target.copy(this.savedCamTarget);
     this.controls.enabled = true;
+    this.appTitle.classList.remove('hidden');
     this.mode = 'table';
   }
 
