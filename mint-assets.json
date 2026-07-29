@@ -119,6 +119,45 @@
         }
       }
     },
+    "hover-tick": {
+      "source": {
+        "manifestVersion": 1,
+        "kind": "asset",
+        "assetType": "audio",
+        "assetId": "xd75d6rb3w6phy7c0evzw530j18bew2y"
+      },
+      "transform": {
+        "position": [
+          0,
+          0,
+          0
+        ],
+        "rotation": [
+          0,
+          0,
+          0
+        ],
+        "scale": [
+          1,
+          1,
+          1
+        ]
+      },
+      "mode": "local_files",
+      "artifacts": {
+        "audio_file": {
+          "artifactId": "audio_file",
+          "role": "audio",
+          "format": "mp3",
+          "contentType": "audio/mpeg",
+          "filename": "hover-tick-e3eff7.mp3",
+          "localPath": "public/assets/mint/hover-tick/audio_file.mp3",
+          "loaderHint": "audio",
+          "byteSize": 8821,
+          "durationSeconds": 0.5
+        }
+      }
+    },
     "plastic-board": {
       "source": {
         "manifestVersion": 1,

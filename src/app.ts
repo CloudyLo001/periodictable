@@ -43,6 +43,7 @@ export class App {
   private mode: Mode = 'table';
   private lowQuality: boolean;
   private hoverIndex = -1;
+  private lastHoverTick = -1;
   private activeIndex = -1;
   private detail: DetailTile | null = null;
   private savedCamPos = new THREE.Vector3();
@@ -192,6 +193,21 @@ export class App {
     this.table.setHover(index);
     this.tooltip.classList.toggle('visible', index >= 0);
     this.renderer.domElement.style.cursor = index >= 0 ? 'pointer' : 'default';
+    if (index >= 0) this.playHoverTick(index);
+  }
+
+  /**
+   * Hover feedback. Sweeping the pointer crosses many tiles, so the tick is
+   * rate-limited and pitched by atomic number to stay musical rather than
+   * machine-gun.
+   */
+  private playHoverTick(index: number): void {
+    const now = performance.now();
+    if (now - this.lastHoverTick < 50) return;
+    this.lastHoverTick = now;
+    const z = this.table.elements[index].z;
+    const rate = 0.94 + ((z - 1) / 117) * 0.34;
+    this.audio.play('hoverTick', 0.22, rate);
   }
 
   private onPointerUp(e: PointerEvent): void {

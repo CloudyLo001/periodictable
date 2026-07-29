@@ -57,7 +57,9 @@ Neutron counts are derived as `round(atomic mass) − Z` (most common isotope).
 Generated with Mint and registered in `mint-assets.json`
 (files under `public/assets/mint/`):
 
-- Four sound effects — zoom whoosh, flap open/close, ambience loop.
+- Five sound effects — hover tick, zoom whoosh, flap open/close, ambience loop.
+  The hover tick is rate-limited and pitched by atomic number, so sweeping the
+  pointer across the table plays a rising scale rather than a burst.
 - Two board PBR materials (base color / normal / roughness maps) under the
   logical keys `wood-board` and `plastic-board`, switchable from settings.
 

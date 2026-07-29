@@ -64,13 +64,14 @@ export class AudioManager {
     }
   }
 
-  play(name: SfxName, volume = 0.5): void {
+  play(name: SfxName, volume = 0.5, rate = 1): void {
     if (!this.ctx || !this.master || this.muted) return;
     const buffer = this.buffers.get(name);
     if (!buffer) return;
     if (this.ctx.state === 'suspended') void this.ctx.resume();
     const src = this.ctx.createBufferSource();
     src.buffer = buffer;
+    src.playbackRate.value = rate;
     const gain = this.ctx.createGain();
     gain.gain.value = volume;
     src.connect(gain).connect(this.master);

@@ -3,6 +3,7 @@
 const base = import.meta.env.BASE_URL;
 
 export const AUDIO_FILES = {
+  hoverTick: `${base}assets/mint/hover-tick/audio_file.mp3`,
   whoosh: `${base}assets/mint/zoom-whoosh/audio_file.mp3`,
   flapOpen: `${base}assets/mint/flap-open/audio_file.mp3`,
   flapClose: `${base}assets/mint/flap-close/audio_file.mp3`,
