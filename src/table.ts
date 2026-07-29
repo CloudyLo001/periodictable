@@ -14,8 +14,12 @@ const TITLE_BAND = 1.9;
 /** World Y of the top edge of the first element row. */
 const TABLE_TOP_Y = -(1 - 5.5) * SPACING + TILE / 2;
 const TITLE_TEXT = 'PERIODIC TABLE';
-/** Front face of the backplane: board sits at z -0.09 and is 0.14 deep. */
+/** The board is a thick slab; its front face stays here so tiles sit flush. */
 const BOARD_FACE_Z = -0.02;
+const BOARD_DEPTH = 0.7;
+/** Capped at BOARD_DEPTH / 2 by RoundedBoxGeometry. */
+const BOARD_RADIUS = 0.32;
+const TILE_RADIUS = 0.15;
 
 interface BoardPreset {
   /** mint-assets.json logical key → public/assets/mint/<key>/ */
@@ -133,7 +137,7 @@ export class TableScene {
     this.intro = new Float32Array(n);
 
     // tile blocks
-    const boxGeo = new RoundedBoxGeometry(TILE, TILE, 1, 2, 0.07);
+    const boxGeo = new RoundedBoxGeometry(TILE, TILE, 1, 5, TILE_RADIUS);
     this.boxMaterial = new THREE.MeshPhysicalMaterial({ color: 0xffffff });
     this.boxes = new THREE.InstancedMesh(boxGeo, this.boxMaterial, n);
     this.boxes.instanceMatrix.setUsage(THREE.DynamicDrawUsage);
@@ -159,7 +163,7 @@ export class TableScene {
     const rows = 10;
     const planeW = cols * SPACING + 1.3;
     const planeH = rows * SPACING + FBLOCK_GAP + 1.3 + TITLE_BAND;
-    const planeGeo = new RoundedBoxGeometry(planeW, planeH, 0.14, 2, 0.07);
+    const planeGeo = new RoundedBoxGeometry(planeW, planeH, BOARD_DEPTH, 6, BOARD_RADIUS);
     // shares the board's texture maps so the lettering reads as milled from it
     this.titleMaterial = new THREE.MeshStandardMaterial({ color: 0x9c7d5e });
     this.titleShadowMaterial = new THREE.MeshBasicMaterial({
@@ -170,7 +174,12 @@ export class TableScene {
     });
     this.backplaneMaterial = new THREE.MeshStandardMaterial({ color: 0xd8d2ca });
     this.backplane = new THREE.Mesh(planeGeo, this.backplaneMaterial);
-    this.backplane.position.set(0, -(FBLOCK_GAP / 2) + TITLE_BAND / 2, -0.09);
+    // slab extends backwards so the front face stays flush under the tiles
+    this.backplane.position.set(
+      0,
+      -(FBLOCK_GAP / 2) + TITLE_BAND / 2,
+      BOARD_FACE_Z - BOARD_DEPTH / 2
+    );
     this.scene.add(this.backplane);
     this.titleY = TABLE_TOP_Y + TITLE_BAND / 2 - 0.12;
     this.loadTitle();
