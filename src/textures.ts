@@ -181,14 +181,15 @@ export function makeTitleTexture(
 
   ctx.textAlign = 'center';
   ctx.font = `700 190px ${FONT}`;
-  ctx.fillStyle = 'rgba(248, 250, 253, 0.97)';
+  // muted fill + tight glow: bloom in the atom scene amplifies this further
+  ctx.fillStyle = 'rgba(214, 221, 232, 0.8)';
   ctx.shadowColor = accent;
-  ctx.shadowBlur = 46;
+  ctx.shadowBlur = 18;
   ctx.fillText(symbol, 512, 130);
   ctx.shadowBlur = 0;
 
   ctx.font = `500 46px ${FONT}`;
-  ctx.fillStyle = 'rgba(235, 240, 248, 0.85)';
+  ctx.fillStyle = 'rgba(214, 221, 232, 0.7)';
   ctx.fillText(`${name}  ·  ${z}`, 512, 262);
 
   const texture = new THREE.CanvasTexture(canvas);

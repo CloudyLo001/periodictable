@@ -402,11 +402,12 @@ export class App {
     if (!this.atom || this.lowQuality) return;
     this.composer = new EffectComposer(this.renderer);
     this.composer.addPass(new RenderPass(this.atom.scene, this.camera));
+    // threshold sits above the text fill so bloom lifts the nucleus, not the labels
     this.bloomPass = new UnrealBloomPass(
       new THREE.Vector2(window.innerWidth, window.innerHeight),
-      0.85,
+      0.62,
       0.6,
-      0.6
+      0.82
     );
     this.composer.addPass(this.bloomPass);
   }
