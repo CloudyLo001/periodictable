@@ -31,9 +31,11 @@ npm run preview   # serve the production build
   colors (category / monochrome), sound on/off. Settings persist in
   localStorage.
 
-A category legend sits below the board, grouped into metals, metalloids and
-nonmetals. It is generated from the same colour table the tiles use, so the
-swatches cannot drift, and it hides in monochrome mode and inside an element.
+The category legend is a second, smaller board standing beside the table, built
+the same way: raised 3D blocks with labels alongside. It shares the board and
+tile materials, so the board-material and finish settings apply to it too, and
+its swatches come from the same colour table as the tiles. It hides in
+monochrome mode.
 
 The "Periodic Table" title is extruded 3D lettering inlaid into the board — the
 letter bases sit below the board surface and a flattened copy underneath acts

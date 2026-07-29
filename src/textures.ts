@@ -232,6 +232,48 @@ export function makeSummaryTexture(text: string): { texture: THREE.CanvasTexture
   return { texture, aspect: H / W };
 }
 
+/**
+ * Title and row labels for the 3D legend board, drawn in board-local world
+ * units so the text lines up with the 3D blocks placed beside it.
+ */
+export function drawLegendPanel(
+  worldW: number,
+  worldH: number,
+  labels: string[],
+  rowH: number,
+  firstRowY: number,
+  labelX: number,
+  px = 200
+): HTMLCanvasElement {
+  const canvas = document.createElement('canvas');
+  canvas.width = Math.round(worldW * px);
+  canvas.height = Math.round(worldH * px);
+  const ctx = canvas.getContext('2d')!;
+  const toX = (x: number) => (x + worldW / 2) * px;
+  const toY = (y: number) => (worldH / 2 - y) * px;
+
+  ctx.textBaseline = 'middle';
+  // legible over both the dark wood and the light plastic board
+  ctx.shadowColor = 'rgba(0, 0, 0, 0.85)';
+  ctx.shadowBlur = 0.05 * px;
+
+  ctx.textAlign = 'center';
+  ctx.fillStyle = 'rgba(255, 255, 255, 0.96)';
+  ctx.font = `600 ${0.25 * px}px ${FONT}`;
+  ctx.letterSpacing = `${0.05 * px}px`;
+  ctx.fillText('CATEGORIES', canvas.width / 2, toY(worldH / 2 - 0.6));
+  ctx.letterSpacing = '0px';
+
+  ctx.textAlign = 'left';
+  ctx.font = `500 ${0.225 * px}px ${FONT}`;
+  ctx.fillStyle = 'rgba(255, 255, 255, 0.93)';
+  labels.forEach((label, i) => {
+    ctx.fillText(label, toX(labelX), toY(firstRowY - i * rowH));
+  });
+
+  return canvas;
+}
+
 /** Soft radial glow sprite texture (for the nucleus). */
 export function makeGlowTexture(color: string): THREE.CanvasTexture {
   const size = 256;

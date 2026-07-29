@@ -5,28 +5,31 @@ import { RenderPass } from 'three/examples/jsm/postprocessing/RenderPass.js';
 import { UnrealBloomPass } from 'three/examples/jsm/postprocessing/UnrealBloomPass.js';
 import { RoomEnvironment } from 'three/examples/jsm/environments/RoomEnvironment.js';
 import type { ElementData, Settings } from './types';
-import { TableScene, tilePosition, type DetailTile } from './table';
+import {
+  SCENE_CENTER_X,
+  SCENE_HALF_W,
+  TableScene,
+  tilePosition,
+  type DetailTile,
+} from './table';
 import { AtomScene, buildSections } from './atom';
 import { SettingsStore } from './settings';
 import { AudioManager } from './audio';
-import { buildLegend } from './legend';
 import { Tweens, easeInCubic, easeInOutCubic, easeOutCubic } from './tween';
 
 type Mode = 'table' | 'entering' | 'inside' | 'exiting';
 
-/** Aimed below board centre so the board rides high, leaving a legend band. */
-const TABLE_CAM_TARGET = new THREE.Vector3(0, -0.9, 0);
+/** Centred on the table plus the legend board standing beside it. */
+const TABLE_CAM_TARGET = new THREE.Vector3(SCENE_CENTER_X, -0.3, 0);
 const TAN_HALF_FOV = Math.tan((45 / 2) * (Math.PI / 180));
-/** Half extents of the board (incl. the title band) relative to the target. */
-const BOARD_HALF_W = 10.8;
-const BOARD_HALF_H = 9.5;
+const BOARD_HALF_H = 8.9;
 
-/** Rest position that fits the whole board for the current aspect ratio. */
+/** Rest position that fits the table and legend for the current aspect ratio. */
 function tableRestPos(aspect: number): THREE.Vector3 {
-  const fitWidth = BOARD_HALF_W / (TAN_HALF_FOV * aspect);
+  const fitWidth = SCENE_HALF_W / (TAN_HALF_FOV * aspect);
   const fitHeight = BOARD_HALF_H / TAN_HALF_FOV;
-  const dist = Math.max(24, fitWidth, fitHeight);
-  return new THREE.Vector3(0, -1.8, dist);
+  const dist = Math.max(22.5, fitWidth, fitHeight);
+  return new THREE.Vector3(SCENE_CENTER_X, -1.0, dist);
 }
 
 export class App {
@@ -57,7 +60,6 @@ export class App {
   private tooltip = document.getElementById('tooltip')!;
   private exitBtn = document.getElementById('exit-btn')!;
   private dataSheet = document.getElementById('data-sheet')!;
-  private legend = document.getElementById('legend')!;
 
   onFirstFrame: (() => void) | null = null;
   private firstFrameDone = false;
@@ -100,8 +102,6 @@ export class App {
     this.controls.dampingFactor = 0.08;
     this.applyTableControlLimits();
 
-    // legend + settings
-    buildLegend(this.legend);
     this.settings.bindUI();
     this.applyAllSettings();
     this.settings.onChange((s, key) => this.applySetting(s, key));
@@ -168,8 +168,7 @@ export class App {
         break;
       case 'colorMode':
         this.table.setColors(s.colorMode);
-        // the key means nothing when every tile is the same colour
-        this.legend.classList.toggle('hidden', s.colorMode === 'mono');
+        this.table.setLegendVisible(s.colorMode === 'category');
         break;
       case 'sound':
         this.audio.setMuted(s.sound === 'off');
@@ -282,7 +281,6 @@ export class App {
     this.mode = 'entering';
     this.activeIndex = index;
     this.setHover(-1);
-    this.legend.classList.add('hidden');
     this.controls.enabled = false;
     this.savedCamPos.copy(this.camera.position);
     this.savedCamTarget.copy(this.controls.target);
@@ -424,7 +422,6 @@ export class App {
     this.applyTableControlLimits();
     this.controls.target.copy(this.savedCamTarget);
     this.controls.enabled = true;
-    this.legend.classList.toggle('hidden', this.settings.state.colorMode === 'mono');
     this.mode = 'table';
   }
 
@@ -500,7 +497,11 @@ export class App {
     const t = THREE.MathUtils.clamp((dist - 12) / Math.max(restZ - 12, 1), 0, 1);
     const maxOffX = (1 - t) * 10;
     const maxOffY = (1 - t) * 6.5;
-    const wantX = THREE.MathUtils.clamp(target.x, -maxOffX, maxOffX);
+    const wantX = THREE.MathUtils.clamp(
+      target.x,
+      TABLE_CAM_TARGET.x - maxOffX,
+      TABLE_CAM_TARGET.x + maxOffX
+    );
     const wantY = THREE.MathUtils.clamp(target.y - TABLE_CAM_TARGET.y, -maxOffY, maxOffY) + TABLE_CAM_TARGET.y;
     const dx = (wantX - target.x) * Math.min(dt * 6, 1);
     const dy = (wantY - target.y) * Math.min(dt * 6, 1);

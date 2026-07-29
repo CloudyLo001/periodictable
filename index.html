@@ -177,69 +177,6 @@
       .seg button.active { background: var(--accent); color: #fff; }
       html.light-bg .seg button.active { color: #fff; }
 
-      /* Category legend */
-      /* sits in the band the camera framing reserves beneath the board */
-      #legend {
-        position: fixed;
-        left: 50%;
-        transform: translateX(-50%);
-        bottom: 14px;
-        z-index: 18;
-        display: flex;
-        gap: 8px;
-        align-items: flex-end;
-        pointer-events: none;
-        opacity: 0.96;
-        transition: opacity 0.35s ease;
-        font-size: 10.5px;
-      }
-      #legend.hidden { opacity: 0; }
-      .lg-group {
-        border: 1px solid var(--panel-border);
-        border-radius: 7px;
-        padding: 4px;
-        background: var(--panel-bg);
-        backdrop-filter: blur(8px);
-      }
-      .lg-title {
-        text-align: center;
-        color: var(--fg);
-        letter-spacing: 0.1em;
-        font-weight: 600;
-        padding: 2px 4px 5px;
-        font-size: 10px;
-      }
-      .lg-row { display: flex; gap: 4px; align-items: stretch; }
-      .lg-cat {
-        width: 22px;
-        height: 100px;
-        border-radius: 4px;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        color: rgba(12, 14, 18, 0.88);
-        font-weight: 600;
-        letter-spacing: 0.02em;
-      }
-      .lg-cat span {
-        writing-mode: vertical-rl;
-        transform: rotate(180deg);
-        white-space: nowrap;
-        padding: 3px 0;
-      }
-      .lg-stack { display: flex; flex-direction: column; gap: 4px; }
-      .lg-stack .lg-cat {
-        width: 76px;
-        height: 48px;
-      }
-      .lg-stack .lg-cat span {
-        writing-mode: horizontal-tb;
-        transform: none;
-      }
-      @media (max-width: 760px), (max-height: 560px) {
-        #legend { display: none; }
-      }
-
       /* Mobile data sheet (replaces 3D panels on narrow screens) */
       #data-sheet {
         position: fixed;
@@ -306,7 +243,6 @@
     </div>
 
     <div id="tooltip"></div>
-    <div id="legend"></div>
     <div id="data-sheet"></div>
 
     <button id="exit-btn" class="icon-btn" aria-label="Exit element">

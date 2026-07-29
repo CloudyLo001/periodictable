@@ -4,7 +4,8 @@ import { FontLoader, type Font } from 'three/examples/jsm/loaders/FontLoader.js'
 import { TextGeometry } from 'three/examples/jsm/geometries/TextGeometry.js';
 import type { Background, BoardMaterial, ColorMode, ElementData, Finish } from './types';
 import { CATEGORY_COLOR, MONO_TILE_COLOR } from './categories';
-import { atlasUvRect, drawTileAtlas, makeGlowTexture } from './textures';
+import { atlasUvRect, drawLegendPanel, drawTileAtlas, makeGlowTexture } from './textures';
+import { LEGEND_ROWS } from './legend';
 
 export const TILE = 0.94;
 export const SPACING = 1.12;
@@ -20,6 +21,21 @@ const BOARD_DEPTH = 0.7;
 /** Capped at BOARD_DEPTH / 2 by RoundedBoxGeometry. */
 const BOARD_RADIUS = 0.32;
 const TILE_RADIUS = 0.15;
+
+// --- legend board, standing to the right of the table -----------------------
+const LEGEND_W = 4.4;
+const LEGEND_H = 8.4;
+const LEGEND_DEPTH = 0.45;
+const LEGEND_ROW_H = 0.62;
+const LEGEND_GAP = 0.9;
+/** Half width of the main board, from the tile grid plus its margin. */
+const MAIN_HALF_W = (18 * SPACING + 1.3) / 2;
+const LEGEND_X = MAIN_HALF_W + LEGEND_GAP + LEGEND_W / 2;
+const LEGEND_Y = 0.675;
+
+/** Horizontal centre and half-width of everything on screen, for framing. */
+export const SCENE_CENTER_X = (LEGEND_X + LEGEND_W / 2 - MAIN_HALF_W) / 2;
+export const SCENE_HALF_W = (LEGEND_X + LEGEND_W / 2 + MAIN_HALF_W) / 2 + 0.5;
 
 interface BoardPreset {
   /** mint-assets.json logical key → public/assets/mint/<key>/ */
@@ -135,6 +151,8 @@ export class TableScene {
   private boardKind: BoardMaterial = 'wood';
   private background: Background = 'black';
   private boardMaps = new Map<string, THREE.Texture[]>();
+  private legendGroup = new THREE.Group();
+  private legendDisposables: Array<{ dispose(): void }> = [];
   private titleGroup: THREE.Group | null = null;
   private titleMaterial: THREE.MeshStandardMaterial;
   private titleShadowMaterial: THREE.MeshBasicMaterial;
@@ -211,6 +229,7 @@ export class TableScene {
     this.scene.add(this.backplane);
     this.titleY = TABLE_TOP_Y + TITLE_BAND / 2 - 0.12;
     this.loadTitle();
+    this.buildLegendBoard();
 
     // lighting: env map is set by the app; directionals add definition
     const key = new THREE.DirectionalLight(0xffffff, 1.0);
@@ -371,6 +390,72 @@ export class TableScene {
         /* font unavailable: the board simply shows no title */
       }
     );
+  }
+
+  /**
+   * The legend as a smaller board beside the table: same material, with a
+   * raised 3D block per category and its label alongside.
+   */
+  private buildLegendBoard(): void {
+    const firstRowY = LEGEND_H / 2 - 1.35;
+    const blockX = -LEGEND_W / 2 + 0.62;
+    const labelX = -LEGEND_W / 2 + 1.05;
+
+    const boardGeo = new RoundedBoxGeometry(LEGEND_W, LEGEND_H, LEGEND_DEPTH, 5, 0.2);
+    this.legendDisposables.push(boardGeo);
+    const board = new THREE.Mesh(boardGeo, this.backplaneMaterial);
+    board.position.z = -LEGEND_DEPTH / 2;
+    this.legendGroup.add(board);
+
+    // blocks share the tile material, so the finish setting applies to them too
+    const blockGeo = new RoundedBoxGeometry(0.46, 0.46, 1, 4, 0.09);
+    this.legendDisposables.push(blockGeo);
+    const blocks = new THREE.InstancedMesh(blockGeo, this.boxMaterial, LEGEND_ROWS.length);
+    const dummy = new THREE.Object3D();
+    LEGEND_ROWS.forEach((row, i) => {
+      dummy.position.set(blockX, firstRowY - i * LEGEND_ROW_H, 0.12);
+      dummy.scale.set(1, 1, 0.24);
+      dummy.rotation.set(0, 0, 0);
+      dummy.updateMatrix();
+      blocks.setMatrixAt(i, dummy.matrix);
+      blocks.setColorAt(i, new THREE.Color(CATEGORY_COLOR[row.key]));
+    });
+    blocks.instanceMatrix.needsUpdate = true;
+    if (blocks.instanceColor) blocks.instanceColor.needsUpdate = true;
+    this.legendGroup.add(blocks);
+
+    const canvas = drawLegendPanel(
+      LEGEND_W,
+      LEGEND_H,
+      LEGEND_ROWS.map((r) => r.label),
+      LEGEND_ROW_H,
+      firstRowY,
+      labelX
+    );
+    const texture = new THREE.CanvasTexture(canvas);
+    texture.colorSpace = THREE.SRGBColorSpace;
+    texture.anisotropy = 8;
+    this.legendDisposables.push(texture);
+    const labelGeo = new THREE.PlaneGeometry(LEGEND_W, LEGEND_H);
+    this.legendDisposables.push(labelGeo);
+    const labelMat = new THREE.MeshBasicMaterial({
+      map: texture,
+      transparent: true,
+      depthWrite: false,
+    });
+    this.legendDisposables.push(labelMat);
+    const labels = new THREE.Mesh(labelGeo, labelMat);
+    labels.position.z = 0.008;
+    labels.renderOrder = 2;
+    this.legendGroup.add(labels);
+
+    this.legendGroup.position.set(LEGEND_X, LEGEND_Y, 0);
+    this.scene.add(this.legendGroup);
+  }
+
+  /** Hidden in monochrome mode, where a colour key means nothing. */
+  setLegendVisible(visible: boolean): void {
+    this.legendGroup.visible = visible;
   }
 
   setBoard(kind: BoardMaterial): void {
@@ -636,6 +721,10 @@ export class TableScene {
     this.backplaneMaterial.dispose();
     this.titleMaterial.dispose();
     this.titleShadowMaterial.dispose();
+    for (const d of this.legendDisposables) d.dispose();
+    this.legendGroup.traverse((o) => {
+      if (o instanceof THREE.InstancedMesh) o.dispose();
+    });
     this.titleGroup?.traverse((o) => {
       if (o instanceof THREE.Mesh) o.geometry.dispose();
     });
