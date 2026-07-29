@@ -202,9 +202,10 @@ export class App {
     this.controls.target.copy(TABLE_CAM_TARGET);
     this.controls.minDistance = 7;
     this.controls.maxDistance = Math.max(42, tableRestPos(this.camera.aspect).z + 14);
-    // the table is a fixed frontal view: zoom only
+    // the table is a fixed frontal view: zoom only, aimed at the cursor
     this.controls.enableRotate = false;
     this.controls.enablePan = false;
+    this.controls.zoomToCursor = true;
   }
 
   private applyAtomControlLimits(camDist: number): void {
@@ -215,6 +216,7 @@ export class App {
     this.controls.maxPolarAngle = Math.PI - 0.25;
     this.controls.enableRotate = true;
     this.controls.enablePan = false;
+    this.controls.zoomToCursor = false;
   }
 
   private async enterElement(index: number): Promise<void> {
@@ -428,10 +430,33 @@ export class App {
     this.composer?.setSize(window.innerWidth, window.innerHeight);
   }
 
+  /**
+   * Zoom-to-cursor lets the view wander laterally; ease it back toward the
+   * table center as the camera zooms out so the table never strands off-screen.
+   */
+  private recenterTable(dt: number): void {
+    const target = this.controls.target;
+    const dist = this.camera.position.distanceTo(target);
+    const restZ = tableRestPos(this.camera.aspect).z;
+    const t = THREE.MathUtils.clamp((dist - 12) / Math.max(restZ - 12, 1), 0, 1);
+    const maxOffX = (1 - t) * 10;
+    const maxOffY = (1 - t) * 6.5;
+    const wantX = THREE.MathUtils.clamp(target.x, -maxOffX, maxOffX);
+    const wantY = THREE.MathUtils.clamp(target.y - TABLE_CAM_TARGET.y, -maxOffY, maxOffY) + TABLE_CAM_TARGET.y;
+    const dx = (wantX - target.x) * Math.min(dt * 6, 1);
+    const dy = (wantY - target.y) * Math.min(dt * 6, 1);
+    if (Math.abs(dx) < 1e-5 && Math.abs(dy) < 1e-5) return;
+    target.x += dx;
+    target.y += dy;
+    this.camera.position.x += dx;
+    this.camera.position.y += dy;
+  }
+
   private tick(): void {
     const dt = Math.min(this.clock.getDelta(), 0.05);
     this.tweens.update(dt);
     if (this.controls.enabled) this.controls.update();
+    if (this.mode === 'table' && this.controls.enabled) this.recenterTable(dt);
 
     // whichever scene owns the camera right now: atom exists = atom renders
     if (this.atom) {
