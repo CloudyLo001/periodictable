@@ -72,6 +72,29 @@ const FINISH_PRESETS: Record<Finish, Partial<THREE.MeshPhysicalMaterial>> = {
   satin: { roughness: 0.45, metalness: 0.18, clearcoat: 0.45, clearcoatRoughness: 0.55 },
 };
 
+/** Rounded-rectangle outline centred on the origin, as a Shape or a hole Path. */
+function roundedRectShape<T extends THREE.Shape | THREE.Path>(
+  width: number,
+  height: number,
+  radius: number,
+  Ctor: new () => T
+): T {
+  const path = new Ctor();
+  const x = -width / 2;
+  const y = -height / 2;
+  const r = Math.min(radius, Math.min(width, height) / 2);
+  path.moveTo(x + r, y);
+  path.lineTo(x + width - r, y);
+  path.quadraticCurveTo(x + width, y, x + width, y + r);
+  path.lineTo(x + width, y + height - r);
+  path.quadraticCurveTo(x + width, y + height, x + width - r, y + height);
+  path.lineTo(x + r, y + height);
+  path.quadraticCurveTo(x, y + height, x, y + height - r);
+  path.lineTo(x, y + r);
+  path.quadraticCurveTo(x, y, x + r, y);
+  return path;
+}
+
 export function tilePosition(el: ElementData): THREE.Vector3 {
   const x = (el.xpos - 9.5) * SPACING;
   let y = -(el.ypos - 5.5) * SPACING;
@@ -491,22 +514,30 @@ export class TableScene {
     const darkMat = new THREE.MeshBasicMaterial({ color: 0x030305 });
     const disposables: Array<{ dispose(): void }> = [wallMat, darkMat];
 
-    // four side walls
-    const t = 0.055;
-    const mkWall = (w: number, h: number, d: number, x: number, y: number, z: number) => {
-      const geo = new THREE.BoxGeometry(w, h, d);
-      disposables.push(geo);
-      const mesh = new THREE.Mesh(geo, wallMat);
-      mesh.position.set(x, y, z);
-      group.add(mesh);
-    };
-    mkWall(TILE, t, depth, 0, TILE / 2 - t / 2, depth / 2); // top
-    mkWall(TILE, t, depth, 0, -TILE / 2 + t / 2, depth / 2); // bottom
-    mkWall(t, TILE - t * 2, depth, -TILE / 2 + t / 2, 0, depth / 2); // left
-    mkWall(t, TILE - t * 2, depth, TILE / 2 - t / 2, 0, depth / 2); // right
+    // one extruded frame: rounded outer silhouette with a rounded opening,
+    // so the shell matches the rounded tiles and has no coincident faces
+    const t = 0.075;
+    const holeSize = TILE - t * 2;
+    const frameShape = roundedRectShape(TILE, TILE, TILE_RADIUS, THREE.Shape) as THREE.Shape;
+    frameShape.holes.push(
+      roundedRectShape(holeSize, holeSize, Math.max(TILE_RADIUS - t, 0.04), THREE.Path)
+    );
+    const frameGeo = new THREE.ExtrudeGeometry(frameShape, {
+      depth: depth - 0.03,
+      bevelEnabled: true,
+      bevelThickness: 0.015,
+      bevelSize: 0.015,
+      bevelSegments: 2,
+      curveSegments: 8,
+    });
+    disposables.push(frameGeo);
+    const frame = new THREE.Mesh(frameGeo, wallMat);
+    frame.position.z = 0.015;
+    group.add(frame);
 
-    // dark interior lining (BackSide box, slightly inset)
-    const innerGeo = new THREE.BoxGeometry(TILE - t * 2, TILE - t * 2, depth * 0.98);
+    // dark cavity, inset from the opening so no surface is coplanar with it
+    const innerSize = holeSize - 0.012;
+    const innerGeo = new THREE.BoxGeometry(innerSize, innerSize, depth * 0.98);
     disposables.push(innerGeo);
     const innerMat = new THREE.MeshBasicMaterial({ color: 0x020204, side: THREE.BackSide });
     disposables.push(innerMat);
@@ -535,14 +566,15 @@ export class TableScene {
     flap.position.set(0, TILE / 2 - t / 2, depth - 0.015);
     group.add(flap);
 
-    const faceGeo = new THREE.PlaneGeometry(TILE, TILE);
+    const faceShape = roundedRectShape(TILE, TILE, TILE_RADIUS, THREE.Shape) as THREE.Shape;
+    const faceGeo = new THREE.ShapeGeometry(faceShape, 8);
     disposables.push(faceGeo);
     const face = new THREE.Mesh(faceGeo, wallMat);
     face.position.y = -TILE / 2 + t / 2;
     face.position.z = 0.012;
     flap.add(face);
 
-    const backGeo = new THREE.PlaneGeometry(TILE, TILE);
+    const backGeo = new THREE.ShapeGeometry(faceShape, 8);
     disposables.push(backGeo);
     const flapBackMat = new THREE.MeshBasicMaterial({ color: 0x08080b, side: THREE.BackSide });
     disposables.push(flapBackMat);
