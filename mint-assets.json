@@ -1,0 +1,162 @@
+{
+  "registryVersion": 1,
+  "assetRoot": "public/assets/mint",
+  "assets": {
+    "atom-ambience": {
+      "source": {
+        "manifestVersion": 1,
+        "kind": "asset",
+        "assetType": "audio",
+        "assetId": "xd788zdsvaq3xt3n4rd6pge1ed8bcf6p"
+      },
+      "transform": {
+        "position": [
+          0,
+          0,
+          0
+        ],
+        "rotation": [
+          0,
+          0,
+          0
+        ],
+        "scale": [
+          1,
+          1,
+          1
+        ]
+      },
+      "mode": "local_files",
+      "artifacts": {
+        "audio_file": {
+          "artifactId": "audio_file",
+          "role": "audio",
+          "format": "mp3",
+          "contentType": "audio/mpeg",
+          "filename": "atom-ambience-5c06b8.mp3",
+          "localPath": "public/assets/mint/atom-ambience/audio_file.mp3",
+          "loaderHint": "audio",
+          "byteSize": 193141,
+          "durationSeconds": 12
+        }
+      }
+    },
+    "flap-close": {
+      "source": {
+        "manifestVersion": 1,
+        "kind": "asset",
+        "assetType": "audio",
+        "assetId": "xd74vqnsxs55wcyh3jjs4yv2tn8bdgh6"
+      },
+      "transform": {
+        "position": [
+          0,
+          0,
+          0
+        ],
+        "rotation": [
+          0,
+          0,
+          0
+        ],
+        "scale": [
+          1,
+          1,
+          1
+        ]
+      },
+      "mode": "local_files",
+      "artifacts": {
+        "audio_file": {
+          "artifactId": "audio_file",
+          "role": "audio",
+          "format": "mp3",
+          "contentType": "audio/mpeg",
+          "filename": "flap-close-8e72d5.mp3",
+          "localPath": "public/assets/mint/flap-close/audio_file.mp3",
+          "loaderHint": "audio",
+          "byteSize": 24703,
+          "durationSeconds": 1.5
+        }
+      }
+    },
+    "flap-open": {
+      "source": {
+        "manifestVersion": 1,
+        "kind": "asset",
+        "assetType": "audio",
+        "assetId": "xd71wmgqy0xvtchpcyjg9dmx4s8bd7se"
+      },
+      "transform": {
+        "position": [
+          0,
+          0,
+          0
+        ],
+        "rotation": [
+          0,
+          0,
+          0
+        ],
+        "scale": [
+          1,
+          1,
+          1
+        ]
+      },
+      "mode": "local_files",
+      "artifacts": {
+        "audio_file": {
+          "artifactId": "audio_file",
+          "role": "audio",
+          "format": "mp3",
+          "contentType": "audio/mpeg",
+          "filename": "flap-open-0cef4e.mp3",
+          "localPath": "public/assets/mint/flap-open/audio_file.mp3",
+          "loaderHint": "audio",
+          "byteSize": 24703,
+          "durationSeconds": 1.5
+        }
+      }
+    },
+    "zoom-whoosh": {
+      "source": {
+        "manifestVersion": 1,
+        "kind": "asset",
+        "assetType": "audio",
+        "assetId": "xd7ad1bmgpxd70qb340yg0vd318bdsxr"
+      },
+      "transform": {
+        "position": [
+          0,
+          0,
+          0
+        ],
+        "rotation": [
+          0,
+          0,
+          0
+        ],
+        "scale": [
+          1,
+          1,
+          1
+        ]
+      },
+      "mode": "local_files",
+      "artifacts": {
+        "audio_file": {
+          "artifactId": "audio_file",
+          "role": "audio",
+          "format": "mp3",
+          "contentType": "audio/mpeg",
+          "filename": "zoom-whoosh-7c34c0.mp3",
+          "localPath": "public/assets/mint/zoom-whoosh/audio_file.mp3",
+          "loaderHint": "audio",
+          "byteSize": 33062,
+          "durationSeconds": 2
+        }
+      }
+    }
+  }
+}
