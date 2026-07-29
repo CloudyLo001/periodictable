@@ -124,7 +124,7 @@
         "manifestVersion": 1,
         "kind": "asset",
         "assetType": "audio",
-        "assetId": "xd74n7ghey0p98wcbbz2tsbass8bfsk3"
+        "assetId": "xd70aes89v7xvb6zdr3smg78r18be90n"
       },
       "transform": {
         "position": [
@@ -150,11 +150,11 @@
           "role": "audio",
           "format": "mp3",
           "contentType": "audio/mpeg",
-          "filename": "hover-tick-v2-7b40b3.mp3",
+          "filename": "hover-marimba-c0e941.mp3",
           "localPath": "public/assets/mint/hover-tick/audio_file.mp3",
           "loaderHint": "audio",
-          "byteSize": 8821,
-          "durationSeconds": 0.5
+          "byteSize": 10493,
+          "durationSeconds": 0.6
         }
       }
     },

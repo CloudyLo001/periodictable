@@ -91,7 +91,8 @@ export class AudioManager {
     }
   }
 
-  play(name: SfxName, volume = 0.5, rate = 1): void {
+  /** `softenHz` low-passes the clip, taking the edge off bright transients. */
+  play(name: SfxName, volume = 0.5, rate = 1, softenHz = 0): void {
     if (!this.ctx || !this.master || this.muted) return;
     const clip = this.buffers.get(name);
     if (!clip) return;
@@ -101,7 +102,16 @@ export class AudioManager {
     src.playbackRate.value = rate;
     const gain = this.ctx.createGain();
     gain.gain.value = volume * clip.norm;
-    src.connect(gain).connect(this.master);
+
+    if (softenHz > 0) {
+      const lp = this.ctx.createBiquadFilter();
+      lp.type = 'lowpass';
+      lp.frequency.value = softenHz;
+      lp.Q.value = 0.7;
+      src.connect(lp).connect(gain).connect(this.master);
+    } else {
+      src.connect(gain).connect(this.master);
+    }
     src.start();
   }
 

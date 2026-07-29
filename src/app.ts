@@ -207,7 +207,7 @@ export class App {
     this.lastHoverTick = now;
     const z = this.table.elements[index].z;
     const rate = 0.94 + ((z - 1) / 117) * 0.34;
-    this.audio.play('hoverTick', 0.3, rate);
+    this.audio.play('hoverTick', 0.34, rate, 2600);
   }
 
   private onPointerUp(e: PointerEvent): void {
