@@ -14,18 +14,23 @@ export const CATEGORY_LABEL: Record<CategoryKey, string> = {
   unknown: 'Unknown properties',
 };
 
+/**
+ * Vivid but still light: the tile labels are baked dark into the atlas, so
+ * these carry high saturation without dropping the luminance needed to read
+ * black text on them.
+ */
 export const CATEGORY_COLOR: Record<CategoryKey, number> = {
-  alkali: 0xff6b6b,
-  alkaline: 0xffa94d,
-  transition: 0xffd43b,
-  postTransition: 0x63e6be,
-  metalloid: 0xa9e34b,
-  nonmetal: 0x51cf66,
-  halogen: 0x66d9e8,
-  nobleGas: 0x74c0fc,
-  lanthanide: 0xb197fc,
-  actinide: 0xf783ac,
-  unknown: 0xadb5bd,
+  alkali: 0xef3b3b,
+  alkaline: 0xf67f0c,
+  transition: 0xf2bd00,
+  postTransition: 0x00c896,
+  metalloid: 0x93d419,
+  nonmetal: 0x18c04f,
+  halogen: 0x00bcd9,
+  nobleGas: 0x2183eb,
+  lanthanide: 0x9457ff,
+  actinide: 0xf03d87,
+  unknown: 0x9aa3ae,
 };
 
 export const MONO_TILE_COLOR = 0xd6d6dc;

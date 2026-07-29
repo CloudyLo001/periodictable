@@ -27,8 +27,8 @@ export function drawTileAtlas(elements: ElementData[], cellPx: number): HTMLCanv
 
     // atomic number, top-left
     ctx.textAlign = 'left';
-    ctx.font = `600 30px ${FONT}`;
-    ctx.fillText(String(el.z), 24, 38);
+    ctx.font = `700 40px ${FONT}`;
+    ctx.fillText(String(el.z), 22, 42);
 
     // symbol, center
     ctx.textAlign = 'center';

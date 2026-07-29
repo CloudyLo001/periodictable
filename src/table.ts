@@ -66,7 +66,7 @@ const BOARD_PRESETS: Record<BoardMaterial, BoardPreset> = {
 };
 
 const FINISH_PRESETS: Record<Finish, Partial<THREE.MeshPhysicalMaterial>> = {
-  glossy: { roughness: 0.12, metalness: 0.02, clearcoat: 1.0, clearcoatRoughness: 0.08 },
+  glossy: { roughness: 0.16, metalness: 0.02, clearcoat: 0.6, clearcoatRoughness: 0.1 },
   matte: { roughness: 0.92, metalness: 0.0, clearcoat: 0.0, clearcoatRoughness: 0.0 },
   metallic: { roughness: 0.26, metalness: 0.92, clearcoat: 0.0, clearcoatRoughness: 0.0 },
   satin: { roughness: 0.45, metalness: 0.18, clearcoat: 0.45, clearcoatRoughness: 0.55 },
@@ -161,7 +161,12 @@ export class TableScene {
 
     // tile blocks
     const boxGeo = new RoundedBoxGeometry(TILE, TILE, 1, 5, TILE_RADIUS);
-    this.boxMaterial = new THREE.MeshPhysicalMaterial({ color: 0xffffff });
+    // damped env reflection: at full strength the studio map washes the
+    // instance colours out to pastel
+    this.boxMaterial = new THREE.MeshPhysicalMaterial({
+      color: 0xffffff,
+      envMapIntensity: 0.55,
+    });
     this.boxes = new THREE.InstancedMesh(boxGeo, this.boxMaterial, n);
     this.boxes.instanceMatrix.setUsage(THREE.DynamicDrawUsage);
     this.scene.add(this.boxes);
@@ -208,13 +213,13 @@ export class TableScene {
     this.loadTitle();
 
     // lighting: env map is set by the app; directionals add definition
-    const key = new THREE.DirectionalLight(0xffffff, 1.35);
+    const key = new THREE.DirectionalLight(0xffffff, 1.0);
     key.position.set(7, 12, 10);
     this.scene.add(key);
-    const fill = new THREE.DirectionalLight(0xbfd8ff, 0.4);
+    const fill = new THREE.DirectionalLight(0xbfd8ff, 0.32);
     fill.position.set(-9, -4, 7);
     this.scene.add(fill);
-    this.scene.add(new THREE.AmbientLight(0xffffff, 0.28));
+    this.scene.add(new THREE.AmbientLight(0xffffff, 0.22));
 
     this.updateAllMatrices();
   }

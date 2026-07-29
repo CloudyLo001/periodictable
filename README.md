@@ -23,13 +23,17 @@ npm run preview   # serve the production build
 - **Table**: fixed frontal view. Scroll/pinch zooms toward the cursor so you can
   inspect a tile up close; the view eases back to center as you zoom out.
   Hover a tile for a tooltip; click/tap it to enter the element.
-- **Inside an element**: drag to orbit the atom, right-drag (or two-finger
-  drag) to pan, scroll/pinch to zoom. Panning is leashed so the atom stays
-  reachable. **Exit** button (top-left) or `Esc` leaves the element.
+- **Inside an element**: drag to orbit the atom; pan with `Shift`+drag,
+  right-drag, or a two-finger drag; scroll/pinch to zoom. Panning is leashed so
+  the atom stays reachable. **Exit** button (top-left) or `Esc` leaves.
 - **Settings** (gear, top-right): tile finish (glossy / matte / metallic /
   satin), board material (wood / plastic), background (black / white), tile
   colors (category / monochrome), sound on/off. Settings persist in
   localStorage.
+
+A category legend sits below the board, grouped into metals, metalloids and
+nonmetals. It is generated from the same colour table the tiles use, so the
+swatches cannot drift, and it hides in monochrome mode and inside an element.
 
 The "Periodic Table" title is extruded 3D lettering inlaid into the board — the
 letter bases sit below the board surface and a flattened copy underneath acts
