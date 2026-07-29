@@ -44,9 +44,13 @@ sheet instead of floating 3D panels, and bloom/particles are reduced.
 
 Neutron counts are derived as `round(atomic mass) − Z` (most common isotope).
 
-## Audio
+## Mint assets
 
-The four sound effects (zoom whoosh, flap open/close, ambience loop) were
-generated with Mint and are registered in `mint-assets.json`
-(files under `public/assets/mint/`). Generation chat:
-https://mint.gg/chat/ph76n7ch019xqejam5y83sz1h18bdg19
+Generated with Mint and registered in `mint-assets.json`
+(files under `public/assets/mint/`):
+
+- Four sound effects — zoom whoosh, flap open/close, ambience loop.
+- The wooden-board PBR material (base color / normal / roughness maps) used
+  for the table backplane.
+
+Generation chat: https://mint.gg/chat/ph76n7ch019xqejam5y83sz1h18bdg19

@@ -94,16 +94,27 @@ export class TableScene {
     this.textMesh.renderOrder = 2;
     this.scene.add(this.textMesh);
 
-    // backplane
+    // backplane: wooden board (Mint material, registry key "wood-board")
     const cols = 18;
     const rows = 10;
     const planeW = cols * SPACING + 1.3;
     const planeH = rows * SPACING + FBLOCK_GAP + 1.3;
     const planeGeo = new RoundedBoxGeometry(planeW, planeH, 0.14, 2, 0.07);
+    const woodBase = `${import.meta.env.BASE_URL}assets/mint/wood-board/`;
+    const texLoader = new THREE.TextureLoader();
+    const loadWoodMap = (file: string, srgb: boolean) => {
+      const tex = texLoader.load(woodBase + file);
+      tex.wrapS = tex.wrapT = THREE.RepeatWrapping;
+      tex.repeat.set(3, 1.8);
+      tex.anisotropy = 8;
+      if (srgb) tex.colorSpace = THREE.SRGBColorSpace;
+      return tex;
+    };
     this.backplaneMaterial = new THREE.MeshStandardMaterial({
-      color: 0x17181c,
-      roughness: 0.85,
-      metalness: 0.05,
+      map: loadWoodMap('map_basecolor.png', true),
+      normalMap: loadWoodMap('map_normal.png', false),
+      roughnessMap: loadWoodMap('map_roughness.png', false),
+      metalness: 0,
     });
     this.backplane = new THREE.Mesh(planeGeo, this.backplaneMaterial);
     this.backplane.position.set(0, -(FBLOCK_GAP / 2), -0.09);
@@ -215,10 +226,11 @@ export class TableScene {
   setBackground(bg: Background): void {
     if (bg === 'black') {
       this.scene.background = new THREE.Color(0x050506);
-      this.backplaneMaterial.color.set(0x17181c);
+      // let the wood sit a touch darker against the black void
+      this.backplaneMaterial.color.set(0xd8d2ca);
     } else {
       this.scene.background = new THREE.Color(0xf2f2f4);
-      this.backplaneMaterial.color.set(0xdddde2);
+      this.backplaneMaterial.color.set(0xffffff);
     }
   }
 
