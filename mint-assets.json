@@ -119,6 +119,213 @@
         }
       }
     },
+    "marble-board": {
+      "source": {
+        "manifestVersion": 1,
+        "kind": "asset",
+        "assetType": "material",
+        "assetId": "w175yar19p7ywwngvw153r5by18bep8b"
+      },
+      "transform": {
+        "position": [
+          0,
+          0,
+          0
+        ],
+        "rotation": [
+          0,
+          0,
+          0
+        ],
+        "scale": [
+          1,
+          1,
+          1
+        ]
+      },
+      "mode": "local_files",
+      "artifacts": {
+        "map_basecolor": {
+          "artifactId": "map_basecolor",
+          "role": "material_map",
+          "format": "png",
+          "contentType": "image/png",
+          "filename": "marble-board-basecolor-d42d27.png",
+          "localPath": "public/assets/mint/marble-board/map_basecolor.png",
+          "loaderHint": "materialMap",
+          "byteSize": 1948192
+        },
+        "map_normal": {
+          "artifactId": "map_normal",
+          "role": "material_map",
+          "format": "png",
+          "contentType": "image/png",
+          "filename": "marble-board-normal-e2cdbf.png",
+          "localPath": "public/assets/mint/marble-board/map_normal.png",
+          "loaderHint": "materialMap",
+          "byteSize": 1606209
+        },
+        "map_roughness": {
+          "artifactId": "map_roughness",
+          "role": "material_map",
+          "format": "png",
+          "contentType": "image/png",
+          "filename": "marble-board-roughness-3080d5.png",
+          "localPath": "public/assets/mint/marble-board/map_roughness.png",
+          "loaderHint": "materialMap",
+          "byteSize": 657358
+        },
+        "preview_image": {
+          "artifactId": "preview_image",
+          "role": "preview_image",
+          "format": "png",
+          "contentType": "image/png",
+          "filename": "marble-board-y18bep8b-preview.png",
+          "localPath": "public/assets/mint/marble-board/preview_image.png",
+          "loaderHint": "image",
+          "byteSize": 1948192
+        }
+      },
+      "thumbnailUrl": "public/assets/mint/marble-board/preview_image.png"
+    },
+    "metal-board": {
+      "source": {
+        "manifestVersion": 1,
+        "kind": "asset",
+        "assetType": "material",
+        "assetId": "w17c3t2cc45rrvskb469nv9eas8bed5y"
+      },
+      "transform": {
+        "position": [
+          0,
+          0,
+          0
+        ],
+        "rotation": [
+          0,
+          0,
+          0
+        ],
+        "scale": [
+          1,
+          1,
+          1
+        ]
+      },
+      "mode": "local_files",
+      "artifacts": {
+        "map_basecolor": {
+          "artifactId": "map_basecolor",
+          "role": "material_map",
+          "format": "png",
+          "contentType": "image/png",
+          "filename": "metal-board-basecolor-20b140.png",
+          "localPath": "public/assets/mint/metal-board/map_basecolor.png",
+          "loaderHint": "materialMap",
+          "byteSize": 1012640
+        },
+        "map_normal": {
+          "artifactId": "map_normal",
+          "role": "material_map",
+          "format": "png",
+          "contentType": "image/png",
+          "filename": "metal-board-normal-2474a1.png",
+          "localPath": "public/assets/mint/metal-board/map_normal.png",
+          "loaderHint": "materialMap",
+          "byteSize": 820936
+        },
+        "map_roughness": {
+          "artifactId": "map_roughness",
+          "role": "material_map",
+          "format": "png",
+          "contentType": "image/png",
+          "filename": "metal-board-roughness-08d91f.png",
+          "localPath": "public/assets/mint/metal-board/map_roughness.png",
+          "loaderHint": "materialMap",
+          "byteSize": 462899
+        },
+        "preview_image": {
+          "artifactId": "preview_image",
+          "role": "preview_image",
+          "format": "png",
+          "contentType": "image/png",
+          "filename": "metal-board-as8bed5y-preview.png",
+          "localPath": "public/assets/mint/metal-board/preview_image.png",
+          "loaderHint": "image",
+          "byteSize": 1012640
+        }
+      },
+      "thumbnailUrl": "public/assets/mint/metal-board/preview_image.png"
+    },
+    "plastic-board": {
+      "source": {
+        "manifestVersion": 1,
+        "kind": "asset",
+        "assetType": "material",
+        "assetId": "w1720ve6084ser8mwd4e9q0s518bfjwd"
+      },
+      "transform": {
+        "position": [
+          0,
+          0,
+          0
+        ],
+        "rotation": [
+          0,
+          0,
+          0
+        ],
+        "scale": [
+          1,
+          1,
+          1
+        ]
+      },
+      "mode": "local_files",
+      "artifacts": {
+        "map_basecolor": {
+          "artifactId": "map_basecolor",
+          "role": "material_map",
+          "format": "png",
+          "contentType": "image/png",
+          "filename": "plastic-board-basecolor-58470a.png",
+          "localPath": "public/assets/mint/plastic-board/map_basecolor.png",
+          "loaderHint": "materialMap",
+          "byteSize": 942806
+        },
+        "map_normal": {
+          "artifactId": "map_normal",
+          "role": "material_map",
+          "format": "png",
+          "contentType": "image/png",
+          "filename": "plastic-board-normal-b47aea.png",
+          "localPath": "public/assets/mint/plastic-board/map_normal.png",
+          "loaderHint": "materialMap",
+          "byteSize": 1165110
+        },
+        "map_roughness": {
+          "artifactId": "map_roughness",
+          "role": "material_map",
+          "format": "png",
+          "contentType": "image/png",
+          "filename": "plastic-board-roughness-0e4d4e.png",
+          "localPath": "public/assets/mint/plastic-board/map_roughness.png",
+          "loaderHint": "materialMap",
+          "byteSize": 400668
+        },
+        "preview_image": {
+          "artifactId": "preview_image",
+          "role": "preview_image",
+          "format": "png",
+          "contentType": "image/png",
+          "filename": "plastic-board-518bfjwd-preview.png",
+          "localPath": "public/assets/mint/plastic-board/preview_image.png",
+          "loaderHint": "image",
+          "byteSize": 942806
+        }
+      },
+      "thumbnailUrl": "public/assets/mint/plastic-board/preview_image.png"
+    },
     "wood-board": {
       "source": {
         "manifestVersion": 1,

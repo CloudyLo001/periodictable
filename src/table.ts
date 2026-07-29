@@ -1,12 +1,37 @@
 import * as THREE from 'three';
 import { RoundedBoxGeometry } from 'three/examples/jsm/geometries/RoundedBoxGeometry.js';
-import type { Background, ColorMode, ElementData, Finish } from './types';
+import { FontLoader, type Font } from 'three/examples/jsm/loaders/FontLoader.js';
+import { TextGeometry } from 'three/examples/jsm/geometries/TextGeometry.js';
+import type { Background, BoardMaterial, ColorMode, ElementData, Finish } from './types';
 import { CATEGORY_COLOR, MONO_TILE_COLOR } from './categories';
 import { atlasUvRect, drawTileAtlas, makeGlowTexture } from './textures';
 
 export const TILE = 0.94;
 export const SPACING = 1.12;
 const FBLOCK_GAP = 0.55;
+/** Extra board height above the top row, reserved for the 3D title. */
+const TITLE_BAND = 1.9;
+/** World Y of the top edge of the first element row. */
+const TABLE_TOP_Y = -(1 - 5.5) * SPACING + TILE / 2;
+const TITLE_TEXT = 'PERIODIC TABLE';
+
+interface BoardPreset {
+  /** mint-assets.json logical key → public/assets/mint/<key>/ */
+  key: string;
+  repeat: [number, number];
+  metalness: number;
+  roughness: number;
+  /** shown while the maps load, and multiplied into the base color */
+  tint: number;
+  tintOnWhite: number;
+}
+
+const BOARD_PRESETS: Record<BoardMaterial, BoardPreset> = {
+  wood: { key: 'wood-board', repeat: [3, 1.8], metalness: 0, roughness: 1, tint: 0xd8d2ca, tintOnWhite: 0xffffff },
+  metal: { key: 'metal-board', repeat: [2.4, 1.5], metalness: 0.88, roughness: 1, tint: 0xc9ced6, tintOnWhite: 0xe8ecf2 },
+  plastic: { key: 'plastic-board', repeat: [2.6, 1.6], metalness: 0, roughness: 1, tint: 0xc4c8cf, tintOnWhite: 0xeceef2 },
+  marble: { key: 'marble-board', repeat: [1.7, 1.15], metalness: 0.08, roughness: 1, tint: 0xd6d9de, tintOnWhite: 0xffffff },
+};
 
 const FINISH_PRESETS: Record<Finish, Partial<THREE.MeshPhysicalMaterial>> = {
   glossy: { roughness: 0.12, metalness: 0.02, clearcoat: 1.0, clearcoatRoughness: 0.08 },
@@ -52,6 +77,12 @@ export class TableScene {
   private atlasTexture: THREE.CanvasTexture;
   private backplane: THREE.Mesh;
   private backplaneMaterial: THREE.MeshStandardMaterial;
+  private boardKind: BoardMaterial = 'wood';
+  private background: Background = 'black';
+  private boardMaps = new Map<string, THREE.Texture[]>();
+  private titleGroup: THREE.Group | null = null;
+  private titleMaterial: THREE.MeshPhysicalMaterial;
+  private titleY = 0;
 
   private baseColors: THREE.Color[] = [];
   private lift: Float32Array;
@@ -94,31 +125,25 @@ export class TableScene {
     this.textMesh.renderOrder = 2;
     this.scene.add(this.textMesh);
 
-    // backplane: wooden board (Mint material, registry key "wood-board")
+    // backplane: swappable Mint board material, with a title band along the top
     const cols = 18;
     const rows = 10;
     const planeW = cols * SPACING + 1.3;
-    const planeH = rows * SPACING + FBLOCK_GAP + 1.3;
+    const planeH = rows * SPACING + FBLOCK_GAP + 1.3 + TITLE_BAND;
     const planeGeo = new RoundedBoxGeometry(planeW, planeH, 0.14, 2, 0.07);
-    const woodBase = `${import.meta.env.BASE_URL}assets/mint/wood-board/`;
-    const texLoader = new THREE.TextureLoader();
-    const loadWoodMap = (file: string, srgb: boolean) => {
-      const tex = texLoader.load(woodBase + file);
-      tex.wrapS = tex.wrapT = THREE.RepeatWrapping;
-      tex.repeat.set(3, 1.8);
-      tex.anisotropy = 8;
-      if (srgb) tex.colorSpace = THREE.SRGBColorSpace;
-      return tex;
-    };
-    this.backplaneMaterial = new THREE.MeshStandardMaterial({
-      map: loadWoodMap('map_basecolor.png', true),
-      normalMap: loadWoodMap('map_normal.png', false),
-      roughnessMap: loadWoodMap('map_roughness.png', false),
-      metalness: 0,
+    this.titleMaterial = new THREE.MeshPhysicalMaterial({
+      color: 0xe4e8ee,
+      metalness: 0.72,
+      roughness: 0.28,
+      clearcoat: 0.5,
+      clearcoatRoughness: 0.3,
     });
+    this.backplaneMaterial = new THREE.MeshStandardMaterial({ color: 0xd8d2ca });
     this.backplane = new THREE.Mesh(planeGeo, this.backplaneMaterial);
-    this.backplane.position.set(0, -(FBLOCK_GAP / 2), -0.09);
+    this.backplane.position.set(0, -(FBLOCK_GAP / 2) + TITLE_BAND / 2, -0.09);
     this.scene.add(this.backplane);
+    this.titleY = TABLE_TOP_Y + TITLE_BAND / 2 - 0.12;
+    this.loadTitle();
 
     // lighting: env map is set by the app; directionals add definition
     const key = new THREE.DirectionalLight(0xffffff, 1.35);
@@ -208,6 +233,104 @@ export class TableScene {
     for (let i = 0; i < this.elements.length; i++) this.updateTileMatrix(i);
   }
 
+  /**
+   * Extruded 3D lettering standing on the board's title band. Built per
+   * character so the letterspacing matches the app's typographic style.
+   */
+  private loadTitle(): void {
+    new FontLoader().load(
+      `${import.meta.env.BASE_URL}fonts/helvetiker_bold.typeface.json`,
+      (font: Font) => {
+        const size = 0.82;
+        const tracking = 0.2;
+        const group = new THREE.Group();
+        const meshes: { mesh: THREE.Mesh; x: number; width: number }[] = [];
+        let cursor = 0;
+
+        for (const char of TITLE_TEXT) {
+          if (char === ' ') {
+            cursor += size * 0.55;
+            continue;
+          }
+          const geo = new TextGeometry(char, {
+            font,
+            size,
+            depth: 0.24,
+            curveSegments: 6,
+            bevelEnabled: true,
+            bevelThickness: 0.025,
+            bevelSize: 0.018,
+            bevelSegments: 3,
+          });
+          geo.computeBoundingBox();
+          const bb = geo.boundingBox!;
+          const width = bb.max.x - bb.min.x;
+          geo.translate(-bb.min.x, -bb.min.y, 0);
+          const mesh = new THREE.Mesh(geo, this.titleMaterial);
+          meshes.push({ mesh, x: cursor, width });
+          cursor += width + tracking;
+        }
+
+        const total = cursor - tracking;
+        for (const { mesh, x } of meshes) {
+          mesh.position.set(x - total / 2, 0, 0);
+          group.add(mesh);
+        }
+        group.position.set(0, this.titleY - size / 2, 0.015);
+        this.titleGroup = group;
+        this.scene.add(group);
+      },
+      undefined,
+      () => {
+        /* font unavailable: the board simply shows no title */
+      }
+    );
+  }
+
+  setBoard(kind: BoardMaterial): void {
+    this.boardKind = kind;
+    const preset = BOARD_PRESETS[kind];
+    const mat = this.backplaneMaterial;
+    mat.metalness = preset.metalness;
+    mat.roughness = preset.roughness;
+    this.applyBoardTint();
+
+    const cached = this.boardMaps.get(preset.key);
+    if (cached) {
+      [mat.map, mat.normalMap, mat.roughnessMap] = cached;
+      mat.needsUpdate = true;
+      return;
+    }
+
+    const base = `${import.meta.env.BASE_URL}assets/mint/${preset.key}/`;
+    const loader = new THREE.TextureLoader();
+    const load = (file: string, srgb: boolean) => {
+      const tex = loader.load(base + file);
+      tex.wrapS = tex.wrapT = THREE.RepeatWrapping;
+      tex.repeat.set(preset.repeat[0], preset.repeat[1]);
+      tex.anisotropy = 8;
+      if (srgb) tex.colorSpace = THREE.SRGBColorSpace;
+      return tex;
+    };
+    const maps = [
+      load('map_basecolor.png', true),
+      load('map_normal.png', false),
+      load('map_roughness.png', false),
+    ];
+    this.boardMaps.set(preset.key, maps);
+    // only apply if the user has not switched again while loading
+    if (this.boardKind !== kind) return;
+    [mat.map, mat.normalMap, mat.roughnessMap] = maps;
+    mat.needsUpdate = true;
+  }
+
+  private applyBoardTint(): void {
+    const preset = BOARD_PRESETS[this.boardKind];
+    this.backplaneMaterial.color.set(
+      this.background === 'black' ? preset.tint : preset.tintOnWhite
+    );
+  }
+
   setColors(mode: ColorMode): void {
     this.baseColors = this.elements.map((el) =>
       new THREE.Color(mode === 'category' ? CATEGORY_COLOR[el.category] : MONO_TILE_COLOR)
@@ -224,14 +347,15 @@ export class TableScene {
   }
 
   setBackground(bg: Background): void {
+    this.background = bg;
     if (bg === 'black') {
       this.scene.background = new THREE.Color(0x050506);
-      // let the wood sit a touch darker against the black void
-      this.backplaneMaterial.color.set(0xd8d2ca);
+      this.titleMaterial.color.set(0xe4e8ee);
     } else {
       this.scene.background = new THREE.Color(0xf2f2f4);
-      this.backplaneMaterial.color.set(0xffffff);
+      this.titleMaterial.color.set(0x9aa1ad);
     }
+    this.applyBoardTint();
   }
 
   setHover(index: number): void {
@@ -412,5 +536,10 @@ export class TableScene {
     this.atlasTexture.dispose();
     (this.backplane.geometry as THREE.BufferGeometry).dispose();
     this.backplaneMaterial.dispose();
+    this.titleMaterial.dispose();
+    this.titleGroup?.traverse((o) => {
+      if (o instanceof THREE.Mesh) o.geometry.dispose();
+    });
+    for (const maps of this.boardMaps.values()) for (const t of maps) t.dispose();
   }
 }

@@ -4,6 +4,7 @@ const STORAGE_KEY = 'pt3d-settings';
 
 const DEFAULTS: Settings = {
   finish: 'glossy',
+  board: 'wood',
   background: 'black',
   colorMode: 'category',
   sound: 'on',
@@ -27,6 +28,8 @@ export class SettingsStore {
       const out: Partial<Settings> = {};
       if (parsed.finish && ['glossy', 'matte', 'metallic', 'satin'].includes(parsed.finish))
         out.finish = parsed.finish;
+      if (parsed.board && ['wood', 'metal', 'plastic', 'marble'].includes(parsed.board))
+        out.board = parsed.board;
       if (parsed.background && ['black', 'white'].includes(parsed.background))
         out.background = parsed.background;
       if (parsed.colorMode && ['category', 'mono'].includes(parsed.colorMode))
@@ -66,6 +69,7 @@ export class SettingsStore {
         panel.classList.remove('visible');
     });
 
+    const syncers: Array<() => void> = [];
     panel.querySelectorAll<HTMLElement>('.seg').forEach((seg) => {
       const key = seg.dataset.setting as keyof Settings;
       const sync = () => {
@@ -74,12 +78,14 @@ export class SettingsStore {
         });
       };
       seg.querySelectorAll<HTMLButtonElement>('button').forEach((b) => {
-        b.addEventListener('click', () => {
-          this.set(key, b.dataset.value as never);
-          sync();
-        });
+        b.addEventListener('click', () => this.set(key, b.dataset.value as never));
       });
+      syncers.push(sync);
       sync();
+    });
+    // the store is the source of truth: reflect every change, however triggered
+    this.onChange(() => {
+      for (const sync of syncers) sync();
     });
   }
 }

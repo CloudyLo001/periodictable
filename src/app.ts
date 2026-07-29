@@ -13,13 +13,18 @@ import { Tweens, easeInCubic, easeInOutCubic, easeOutCubic } from './tween';
 
 type Mode = 'table' | 'entering' | 'inside' | 'exiting';
 
-const TABLE_CAM_TARGET = new THREE.Vector3(0, -0.3, 0);
+const TABLE_CAM_TARGET = new THREE.Vector3(0, 0.3, 0);
 const TAN_HALF_FOV = Math.tan((45 / 2) * (Math.PI / 180));
+/** Half extents of the board (incl. the title band) relative to the target. */
+const BOARD_HALF_W = 10.8;
+const BOARD_HALF_H = 8.4;
 
-/** Rest position that fits the whole table for the current aspect ratio. */
+/** Rest position that fits the whole board for the current aspect ratio. */
 function tableRestPos(aspect: number): THREE.Vector3 {
-  const dist = Math.max(21.5, 10.8 / (TAN_HALF_FOV * aspect));
-  return new THREE.Vector3(0, -1.2, dist);
+  const fitWidth = BOARD_HALF_W / (TAN_HALF_FOV * aspect);
+  const fitHeight = BOARD_HALF_H / TAN_HALF_FOV;
+  const dist = Math.max(21.5, fitWidth, fitHeight);
+  return new THREE.Vector3(0, -0.6, dist);
 }
 
 export class App {
@@ -49,7 +54,6 @@ export class App {
   private tooltip = document.getElementById('tooltip')!;
   private exitBtn = document.getElementById('exit-btn')!;
   private dataSheet = document.getElementById('data-sheet')!;
-  private appTitle = document.getElementById('app-title')!;
 
   onFirstFrame: (() => void) | null = null;
   private firstFrameDone = false;
@@ -131,6 +135,7 @@ export class App {
   private applyAllSettings(): void {
     const s = this.settings.state;
     this.applySetting(s, 'finish');
+    this.applySetting(s, 'board');
     this.applySetting(s, 'background');
     this.applySetting(s, 'colorMode');
     this.applySetting(s, 'sound');
@@ -140,6 +145,9 @@ export class App {
     switch (key) {
       case 'finish':
         this.table.setFinish(s.finish);
+        break;
+      case 'board':
+        this.table.setBoard(s.board);
         break;
       case 'background':
         this.table.setBackground(s.background);
@@ -215,8 +223,27 @@ export class App {
     this.controls.minPolarAngle = 0.25;
     this.controls.maxPolarAngle = Math.PI - 0.25;
     this.controls.enableRotate = true;
-    this.controls.enablePan = false;
+    // pan with right-drag (or two-finger drag) to inspect panels up close
+    this.controls.enablePan = true;
+    this.controls.screenSpacePanning = true;
     this.controls.zoomToCursor = false;
+  }
+
+  /** Keep panning inside an element on a leash so the atom is never lost. */
+  private clampAtomPan(): void {
+    if (!this.atom) return;
+    const target = this.controls.target;
+    const limit = this.atom.maxShellRadius + 4.5;
+    const dist = target.length();
+    if (dist <= limit) return;
+    const scale = limit / dist;
+    const dx = target.x * scale - target.x;
+    const dy = target.y * scale - target.y;
+    const dz = target.z * scale - target.z;
+    target.set(target.x + dx, target.y + dy, target.z + dz);
+    this.camera.position.x += dx;
+    this.camera.position.y += dy;
+    this.camera.position.z += dz;
   }
 
   private async enterElement(index: number): Promise<void> {
@@ -224,7 +251,6 @@ export class App {
     this.mode = 'entering';
     this.activeIndex = index;
     this.setHover(-1);
-    this.appTitle.classList.add('hidden');
     this.controls.enabled = false;
     this.savedCamPos.copy(this.camera.position);
     this.savedCamTarget.copy(this.controls.target);
@@ -366,7 +392,6 @@ export class App {
     this.applyTableControlLimits();
     this.controls.target.copy(this.savedCamTarget);
     this.controls.enabled = true;
-    this.appTitle.classList.remove('hidden');
     this.mode = 'table';
   }
 
@@ -458,6 +483,7 @@ export class App {
     this.tweens.update(dt);
     if (this.controls.enabled) this.controls.update();
     if (this.mode === 'table' && this.controls.enabled) this.recenterTable(dt);
+    if (this.mode === 'inside' && this.controls.enabled) this.clampAtomPan();
 
     // whichever scene owns the camera right now: atom exists = atom renders
     if (this.atom) {

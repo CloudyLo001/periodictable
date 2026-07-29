@@ -20,13 +20,19 @@ npm run preview   # serve the production build
 
 ## Controls
 
-- **Table**: drag to orbit, scroll/pinch to zoom, right-drag to pan.
+- **Table**: fixed frontal view. Scroll/pinch zooms toward the cursor so you can
+  inspect a tile up close; the view eases back to center as you zoom out.
   Hover a tile for a tooltip; click/tap it to enter the element.
-- **Inside an element**: drag to orbit the atom, scroll/pinch to zoom.
-  **Exit** button (top-left) or `Esc` leaves the element.
-- **Settings** (gear, top-right): material finish (glossy / matte / metallic /
-  satin), background (black / white), tile colors (category / monochrome),
-  sound on/off. Settings persist in localStorage.
+- **Inside an element**: drag to orbit the atom, right-drag (or two-finger
+  drag) to pan, scroll/pinch to zoom. Panning is leashed so the atom stays
+  reachable. **Exit** button (top-left) or `Esc` leaves the element.
+- **Settings** (gear, top-right): tile finish (glossy / matte / metallic /
+  satin), board material (wood / metal / plastic / marble), background
+  (black / white), tile colors (category / monochrome), sound on/off.
+  Settings persist in localStorage.
+
+The "Periodic Table" title is extruded 3D lettering standing on the board
+itself, not an HTML overlay.
 
 On narrow (portrait) screens the element data appears in a scrollable bottom
 sheet instead of floating 3D panels, and bloom/particles are reduced.
@@ -50,7 +56,11 @@ Generated with Mint and registered in `mint-assets.json`
 (files under `public/assets/mint/`):
 
 - Four sound effects — zoom whoosh, flap open/close, ambience loop.
-- The wooden-board PBR material (base color / normal / roughness maps) used
-  for the table backplane.
+- Four board PBR materials (base color / normal / roughness maps) under the
+  logical keys `wood-board`, `metal-board`, `plastic-board`, and
+  `marble-board`, switchable from settings.
 
 Generation chat: https://mint.gg/chat/ph76n7ch019xqejam5y83sz1h18bdg19
+
+The 3D title uses the Helvetiker typeface bundled with three.js
+(`public/fonts/`, see the license file there).
