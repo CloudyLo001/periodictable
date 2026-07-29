@@ -124,7 +124,7 @@
         "manifestVersion": 1,
         "kind": "asset",
         "assetType": "material",
-        "assetId": "w171m97dkfc09299yz4tx8c7h18bf9rh"
+        "assetId": "w17ex0r8e6dhjhgky758de0mrn8bfzh6"
       },
       "transform": {
         "position": [
@@ -150,27 +150,27 @@
           "role": "material_map",
           "format": "png",
           "contentType": "image/png",
-          "filename": "wood-board-basecolor-2acadb.png",
+          "filename": "dark-wood-board-basecolor-f82380.png",
           "localPath": "public/assets/mint/wood-board/map_basecolor.png",
           "loaderHint": "materialMap",
-          "byteSize": 1397033
+          "byteSize": 1584243
         },
         "map_height": {
           "artifactId": "map_height",
           "role": "material_map",
           "format": "png",
           "contentType": "image/png",
-          "filename": "wood-board-height-343300.png",
+          "filename": "dark-wood-board-height-984268.png",
           "localPath": "public/assets/mint/wood-board/map_height.png",
           "loaderHint": "materialMap",
-          "byteSize": 348816
+          "byteSize": 366638
         },
         "map_metalness": {
           "artifactId": "map_metalness",
           "role": "material_map",
           "format": "png",
           "contentType": "image/png",
-          "filename": "wood-board-metalness-473469.png",
+          "filename": "dark-wood-board-metalness-492b86.png",
           "localPath": "public/assets/mint/wood-board/map_metalness.png",
           "loaderHint": "materialMap",
           "byteSize": 14131
@@ -180,30 +180,30 @@
           "role": "material_map",
           "format": "png",
           "contentType": "image/png",
-          "filename": "wood-board-normal-6653a8.png",
+          "filename": "dark-wood-board-normal-18b7da.png",
           "localPath": "public/assets/mint/wood-board/map_normal.png",
           "loaderHint": "materialMap",
-          "byteSize": 1101432
+          "byteSize": 1080937
         },
         "map_roughness": {
           "artifactId": "map_roughness",
           "role": "material_map",
           "format": "png",
           "contentType": "image/png",
-          "filename": "wood-board-roughness-df510f.png",
+          "filename": "dark-wood-board-roughness-9e86d9.png",
           "localPath": "public/assets/mint/wood-board/map_roughness.png",
           "loaderHint": "materialMap",
-          "byteSize": 471674
+          "byteSize": 512482
         },
         "preview_image": {
           "artifactId": "preview_image",
           "role": "preview_image",
           "format": "png",
           "contentType": "image/png",
-          "filename": "wood-board-h18bf9rh-preview.png",
+          "filename": "dark-wood-board-rn8bfzh6-preview.png",
           "localPath": "public/assets/mint/wood-board/preview_image.png",
           "loaderHint": "image",
-          "byteSize": 1397033
+          "byteSize": 1584243
         }
       },
       "thumbnailUrl": "public/assets/mint/wood-board/preview_image.png"
