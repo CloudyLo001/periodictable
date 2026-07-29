@@ -57,13 +57,15 @@ Neutron counts are derived as `round(atomic mass) − Z` (most common isotope).
 Generated with Mint and registered in `mint-assets.json`
 (files under `public/assets/mint/`):
 
-- Five sound effects — hover note, zoom whoosh, flap open/close, ambience loop.
-  The hover note is a soft wooden marimba tone, rate-limited and pitched by
-  atomic number, so sweeping the pointer across the table plays a rising scale
-  rather than a burst.
+- Five sound effects — hover ploop, zoom whoosh, flap open/close, ambience loop.
+  The hover ploop is a soft muted pop, rate-limited and pitched by atomic
+  number, so sweeping the pointer across the table plays a rising run rather
+  than a burst.
 
-Clips are peak-normalized at decode time, so a quiet generated file cannot ship
-as silence.
+At decode time clips are peak-normalized (so a quiet generated file cannot ship
+as silence) and their leading silence is measured so one-shots fire instantly.
+Playback can additionally low-pass a clip and impose a decay envelope; the
+hover sound uses both to stay mellow and avoid any ringing tail.
 - Two board PBR materials (base color / normal / roughness maps) under the
   logical keys `wood-board` and `plastic-board`, switchable from settings.
 
