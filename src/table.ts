@@ -14,6 +14,8 @@ const TITLE_BAND = 1.9;
 /** World Y of the top edge of the first element row. */
 const TABLE_TOP_Y = -(1 - 5.5) * SPACING + TILE / 2;
 const TITLE_TEXT = 'PERIODIC TABLE';
+/** Front face of the backplane: board sits at z -0.09 and is 0.14 deep. */
+const BOARD_FACE_Z = -0.02;
 
 interface BoardPreset {
   /** mint-assets.json logical key → public/assets/mint/<key>/ */
@@ -24,13 +26,39 @@ interface BoardPreset {
   /** shown while the maps load, and multiplied into the base color */
   tint: number;
   tintOnWhite: number;
+  /** inlaid title lettering, toned to sit with the board rather than shout */
+  titleTint: number;
+  titleTintOnWhite: number;
+  titleMetalness: number;
+  titleRoughness: number;
 }
 
 const BOARD_PRESETS: Record<BoardMaterial, BoardPreset> = {
-  wood: { key: 'wood-board', repeat: [3, 1.8], metalness: 0, roughness: 1, tint: 0xd8d2ca, tintOnWhite: 0xffffff },
-  metal: { key: 'metal-board', repeat: [2.4, 1.5], metalness: 0.88, roughness: 1, tint: 0xc9ced6, tintOnWhite: 0xe8ecf2 },
-  plastic: { key: 'plastic-board', repeat: [2.6, 1.6], metalness: 0, roughness: 1, tint: 0xc4c8cf, tintOnWhite: 0xeceef2 },
-  marble: { key: 'marble-board', repeat: [1.7, 1.15], metalness: 0.08, roughness: 1, tint: 0xd6d9de, tintOnWhite: 0xffffff },
+  wood: {
+    key: 'wood-board',
+    repeat: [3, 1.8],
+    metalness: 0,
+    roughness: 1,
+    tint: 0xd8d2ca,
+    tintOnWhite: 0xffffff,
+    // warm brass inlay: reads clearly against walnut without looking bolted on
+    titleTint: 0xd9ad63,
+    titleTintOnWhite: 0xc59a52,
+    titleMetalness: 0.68,
+    titleRoughness: 0.29,
+  },
+  plastic: {
+    key: 'plastic-board',
+    repeat: [2.6, 1.6],
+    metalness: 0,
+    roughness: 1,
+    tint: 0xc4c8cf,
+    tintOnWhite: 0xeceef2,
+    titleTint: 0xf0f3f8,
+    titleTintOnWhite: 0x7c828d,
+    titleMetalness: 0.55,
+    titleRoughness: 0.34,
+  },
 };
 
 const FINISH_PRESETS: Record<Finish, Partial<THREE.MeshPhysicalMaterial>> = {
@@ -81,7 +109,8 @@ export class TableScene {
   private background: Background = 'black';
   private boardMaps = new Map<string, THREE.Texture[]>();
   private titleGroup: THREE.Group | null = null;
-  private titleMaterial: THREE.MeshPhysicalMaterial;
+  private titleMaterial: THREE.MeshStandardMaterial;
+  private titleShadowMaterial: THREE.MeshBasicMaterial;
   private titleY = 0;
 
   private baseColors: THREE.Color[] = [];
@@ -131,12 +160,13 @@ export class TableScene {
     const planeW = cols * SPACING + 1.3;
     const planeH = rows * SPACING + FBLOCK_GAP + 1.3 + TITLE_BAND;
     const planeGeo = new RoundedBoxGeometry(planeW, planeH, 0.14, 2, 0.07);
-    this.titleMaterial = new THREE.MeshPhysicalMaterial({
-      color: 0xe4e8ee,
-      metalness: 0.72,
-      roughness: 0.28,
-      clearcoat: 0.5,
-      clearcoatRoughness: 0.3,
+    // shares the board's texture maps so the lettering reads as milled from it
+    this.titleMaterial = new THREE.MeshStandardMaterial({ color: 0x9c7d5e });
+    this.titleShadowMaterial = new THREE.MeshBasicMaterial({
+      color: 0x000000,
+      transparent: true,
+      opacity: 0.34,
+      depthWrite: false,
     });
     this.backplaneMaterial = new THREE.MeshStandardMaterial({ color: 0xd8d2ca });
     this.backplane = new THREE.Mesh(planeGeo, this.backplaneMaterial);
@@ -234,8 +264,9 @@ export class TableScene {
   }
 
   /**
-   * Extruded 3D lettering standing on the board's title band. Built per
-   * character so the letterspacing matches the app's typographic style.
+   * Low-relief 3D lettering milled out of the board's title band: the letter
+   * bases sit below the board face, they carry the board's own material, and a
+   * flat darkened copy underneath fakes the contact shadow.
    */
   private loadTitle(): void {
     new FontLoader().load(
@@ -244,7 +275,7 @@ export class TableScene {
         const size = 0.82;
         const tracking = 0.2;
         const group = new THREE.Group();
-        const meshes: { mesh: THREE.Mesh; x: number; width: number }[] = [];
+        const placed: { geo: TextGeometry; x: number; width: number; height: number }[] = [];
         let cursor = 0;
 
         for (const char of TITLE_TEXT) {
@@ -255,28 +286,46 @@ export class TableScene {
           const geo = new TextGeometry(char, {
             font,
             size,
-            depth: 0.24,
+            depth: 0.13,
             curveSegments: 6,
             bevelEnabled: true,
-            bevelThickness: 0.025,
-            bevelSize: 0.018,
+            bevelThickness: 0.02,
+            bevelSize: 0.016,
             bevelSegments: 3,
           });
           geo.computeBoundingBox();
           const bb = geo.boundingBox!;
           const width = bb.max.x - bb.min.x;
+          const height = bb.max.y - bb.min.y;
           geo.translate(-bb.min.x, -bb.min.y, 0);
-          const mesh = new THREE.Mesh(geo, this.titleMaterial);
-          meshes.push({ mesh, x: cursor, width });
+          placed.push({ geo, x: cursor, width, height });
           cursor += width + tracking;
         }
 
         const total = cursor - tracking;
-        for (const { mesh, x } of meshes) {
-          mesh.position.set(x - total / 2, 0, 0);
+        const shadowScale = 1.07;
+        for (const { geo, x, width, height } of placed) {
+          const letterX = x - total / 2;
+
+          // contact shadow: flattened copy of the glyph, offset away from the key light
+          const shadow = new THREE.Mesh(geo.clone(), this.titleShadowMaterial);
+          shadow.scale.set(shadowScale, shadowScale, 0.001);
+          shadow.position.set(
+            letterX - ((shadowScale - 1) * width) / 2 - 0.03,
+            -((shadowScale - 1) * height) / 2 - 0.04,
+            0.038
+          );
+          shadow.renderOrder = 1;
+          group.add(shadow);
+
+          const mesh = new THREE.Mesh(geo, this.titleMaterial);
+          mesh.position.set(letterX, 0, 0);
+          mesh.renderOrder = 2;
           group.add(mesh);
         }
-        group.position.set(0, this.titleY - size / 2, 0.015);
+
+        // sink the letter bases into the board so they emerge from the surface
+        group.position.set(0, this.titleY - size / 2, BOARD_FACE_Z - 0.035);
         this.titleGroup = group;
         this.scene.add(group);
       },
@@ -297,8 +346,7 @@ export class TableScene {
 
     const cached = this.boardMaps.get(preset.key);
     if (cached) {
-      [mat.map, mat.normalMap, mat.roughnessMap] = cached;
-      mat.needsUpdate = true;
+      this.applyBoardMaps(cached);
       return;
     }
 
@@ -320,15 +368,25 @@ export class TableScene {
     this.boardMaps.set(preset.key, maps);
     // only apply if the user has not switched again while loading
     if (this.boardKind !== kind) return;
-    [mat.map, mat.normalMap, mat.roughnessMap] = maps;
+    this.applyBoardMaps(maps);
+  }
+
+  private applyBoardMaps(maps: THREE.Texture[]): void {
+    const [base, normal, rough] = maps;
+    const mat = this.backplaneMaterial;
+    [mat.map, mat.normalMap, mat.roughnessMap] = [base, normal, rough];
     mat.needsUpdate = true;
   }
 
   private applyBoardTint(): void {
     const preset = BOARD_PRESETS[this.boardKind];
-    this.backplaneMaterial.color.set(
-      this.background === 'black' ? preset.tint : preset.tintOnWhite
-    );
+    const dark = this.background === 'black';
+    this.backplaneMaterial.color.set(dark ? preset.tint : preset.tintOnWhite);
+    const title = this.titleMaterial;
+    title.color.set(dark ? preset.titleTint : preset.titleTintOnWhite);
+    title.metalness = preset.titleMetalness;
+    title.roughness = preset.titleRoughness;
+    title.needsUpdate = true;
   }
 
   setColors(mode: ColorMode): void {
@@ -348,13 +406,7 @@ export class TableScene {
 
   setBackground(bg: Background): void {
     this.background = bg;
-    if (bg === 'black') {
-      this.scene.background = new THREE.Color(0x050506);
-      this.titleMaterial.color.set(0xe4e8ee);
-    } else {
-      this.scene.background = new THREE.Color(0xf2f2f4);
-      this.titleMaterial.color.set(0x9aa1ad);
-    }
+    this.scene.background = new THREE.Color(bg === 'black' ? 0x050506 : 0xf2f2f4);
     this.applyBoardTint();
   }
 
@@ -537,6 +589,7 @@ export class TableScene {
     (this.backplane.geometry as THREE.BufferGeometry).dispose();
     this.backplaneMaterial.dispose();
     this.titleMaterial.dispose();
+    this.titleShadowMaterial.dispose();
     this.titleGroup?.traverse((o) => {
       if (o instanceof THREE.Mesh) o.geometry.dispose();
     });

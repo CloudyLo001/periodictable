@@ -49,7 +49,7 @@ export type CategoryKey =
 export type Finish = 'glossy' | 'matte' | 'metallic' | 'satin';
 export type Background = 'black' | 'white';
 export type ColorMode = 'category' | 'mono';
-export type BoardMaterial = 'wood' | 'metal' | 'plastic' | 'marble';
+export type BoardMaterial = 'wood' | 'plastic';
 
 export interface Settings {
   finish: Finish;

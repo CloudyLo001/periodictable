@@ -28,8 +28,7 @@ export class SettingsStore {
       const out: Partial<Settings> = {};
       if (parsed.finish && ['glossy', 'matte', 'metallic', 'satin'].includes(parsed.finish))
         out.finish = parsed.finish;
-      if (parsed.board && ['wood', 'metal', 'plastic', 'marble'].includes(parsed.board))
-        out.board = parsed.board;
+      if (parsed.board && ['wood', 'plastic'].includes(parsed.board)) out.board = parsed.board;
       if (parsed.background && ['black', 'white'].includes(parsed.background))
         out.background = parsed.background;
       if (parsed.colorMode && ['category', 'mono'].includes(parsed.colorMode))
